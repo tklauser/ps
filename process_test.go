@@ -6,7 +6,6 @@ package ps_test
 
 import (
 	"bytes"
-	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -15,7 +14,6 @@ import (
 	"time"
 
 	"github.com/tklauser/ps"
-	"golang.org/x/sys/unix"
 )
 
 var startTime = time.Now()
@@ -131,7 +129,7 @@ func TestFindInitProcess(t *testing.T) {
 	}
 
 	proc, err := ps.FindProcess(initPID)
-	if errors.Is(err, unix.EPERM) {
+	if os.IsPermission(err) {
 		t.Skipf("no permission to read init process")
 	} else if err != nil {
 		t.Fatalf("FindProcess(%d): %v", initPID, err)
