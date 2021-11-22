@@ -31,7 +31,12 @@ func logProcess(t *testing.T, p ps.Process) {
 
 	t.Logf("process %d (%s) ppid %d uid %d gid %d ctime %v",
 		p.PID(), p.Command(), p.PPID(), p.UID(), p.GID(), p.CreationTime())
-	t.Logf("  $ %s %s", p.ExecutablePath(), strings.Join(p.ExecutableArgs(), " "))
+
+	exeArgs := ""
+	if args := p.ExecutableArgs(); len(args) > 1 {
+		exeArgs = " " + strings.Join(args[1:], " ")
+	}
+	t.Logf("  $ %s%s", p.ExecutablePath(), exeArgs)
 }
 
 func checkOwnProcess(t *testing.T, p ps.Process) {
