@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -28,7 +29,9 @@ func getExeName() string {
 func logProcess(t *testing.T, p ps.Process) {
 	t.Helper()
 
-	t.Logf("process %d (%s) ppid %d uid %d gid %d ctime %v", p.PID(), p.Command(), p.PPID(), p.UID(), p.GID(), p.CreationTime())
+	t.Logf("process %d (%s) ppid %d uid %d gid %d ctime %v",
+		p.PID(), p.Command(), p.PPID(), p.UID(), p.GID(), p.CreationTime())
+	t.Logf("  $ %s %s", p.ExecutablePath(), strings.Join(p.ExecutableArgs(), " "))
 }
 
 func checkOwnProcess(t *testing.T, p ps.Process) {
