@@ -32,7 +32,7 @@ func getExePathAndArgs(pid int) (string, []string) {
 	nulPos := bytes.IndexByte(procArgs, 0)
 	exe := string(procArgs[:nulPos])
 	nulPos++
-	for procArgs[nulPos] == 0 {
+	for nulPos < len(procArgs) && procArgs[nulPos] == 0 {
 		nulPos++
 	}
 
