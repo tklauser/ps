@@ -27,10 +27,17 @@ func getExePathAndArgs(pid int) (string, []string) {
 	if err := binary.Read(bytes.NewReader(procArgs), binary.LittleEndian, &argc); err != nil {
 		return "", nil
 	}
+	if argc < 1 {
+		return "", nil
+	}
 
 	procArgs = procArgs[4:]
 	nulPos := bytes.IndexByte(procArgs, 0)
 	exe := string(procArgs[:nulPos])
+	if argc == 1 {
+		return exe, []string{exe}
+	}
+
 	nulPos++
 	for nulPos < len(procArgs) && procArgs[nulPos] == 0 {
 		nulPos++
