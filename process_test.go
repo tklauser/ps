@@ -108,7 +108,7 @@ func getInitName() string {
 	return ""
 }
 
-func TestFindOwnProcess(t *testing.T) {
+func TestFindProcessOwn(t *testing.T) {
 	proc, err := ps.FindProcess(-1)
 	if err == nil {
 		t.Fatal("FindProcess: got nil error, want an error")
@@ -127,7 +127,7 @@ func TestFindOwnProcess(t *testing.T) {
 	checkOwnProcess(t, proc)
 }
 
-func TestFindInitProcess(t *testing.T) {
+func TestFindProcessInit(t *testing.T) {
 	initPID := 1
 	wantUID, wantGID := 0, 0
 	if runtime.GOOS == "windows" {
