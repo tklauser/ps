@@ -1,6 +1,7 @@
 # ps
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/tklauser/ps.svg)][1]
+[![GitHub Action Status](https://github.com/tklauser/ps/workflows/Tests/badge.svg)](https://github.com/tklauser/ps/actions?query=workflow%3ATests)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tklauser/ps)](https://goreportcard.com/report/github.com/tklauser/ps)
 
 Package `ps` provides functionality to find, list and inspect operating system
