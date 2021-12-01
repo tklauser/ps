@@ -13,7 +13,28 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+func getDarwinVersion() int {
+	osrel, err := unix.Sysctl("kern.osrelease")
+	if err != nil {
+		return 0
+	}
+	ver := 0
+	for i := 0; i < len(osrel) && '0' <= osrel[i] && osrel[i] <= '9'; i++ {
+		ver *= 10
+		ver += int(osrel[i] - '0')
+	}
+	return ver
+}
+
 func getExePathAndArgs(pid int) (string, []string) {
+	// TODO(tk): figure out why the format returned by the kern.procargs2 sysctl is different on
+	// macOS 10.15 and earlier.
+	if getDarwinVersion() <= 19 {
+		// 19.x.y is macOS 10.15 (Catalina), see
+		// https://en.wikipedia.org/wiki/Darwin_(operating_system)#Release_history
+		return "", nil
+	}
+
 	// See function getproclline() in adv_cmds/ps/print.c
 	// The format of KERN_PROCARGS2 is a C int (argc) followed by the executable’s string area.
 	// The string area consists of NUL-terminated strings, beginning with the executable path,
@@ -22,7 +43,10 @@ func getExePathAndArgs(pid int) (string, []string) {
 	if err != nil {
 		return "", nil
 	}
+	return parseProcArgs(procArgs)
+}
 
+func parseProcArgs(procArgs []byte) (string, []string) {
 	var argc int32 // C.int
 	if err := binary.Read(bytes.NewReader(procArgs), binary.LittleEndian, &argc); err != nil {
 		return "", nil
