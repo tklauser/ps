@@ -6,7 +6,7 @@ package ps
 
 import (
 	"fmt"
-	"path/filepath"
+	"syscall"
 	"time"
 	"unsafe"
 
@@ -46,7 +46,7 @@ func (p *windowsProcess) ExecutablePath() string {
 	if p.executablePath == "" {
 		return p.command
 	}
-	return filepath.Base(p.executablePath)
+	return p.executablePath
 }
 
 func (p *windowsProcess) ExecutableArgs() []string {
@@ -71,6 +71,57 @@ func getCreationTime(pid uint32) time.Time {
 	return time.Unix(0, creationTime.Nanoseconds())
 }
 
+const _MAX_MODULE_NAME32 = 255
+
+type moduleEntry32 struct {
+	Size         uint32
+	ModuleID     uint32
+	ProcessID    uint32
+	GlblcntUsage uint32
+	ProccntUsage uint32
+	ModBaseAddr  uintptr
+	ModBaseSize  uint32
+	ModuleHandle windows.Handle
+	Module       [_MAX_MODULE_NAME32 + 1]uint16
+	ExePath      [windows.MAX_PATH]uint16
+}
+
+const sizeofModuleEntry32 = uint32(unsafe.Sizeof(moduleEntry32{}))
+
+// Windows API functions
+var (
+	modkernel32       = windows.NewLazySystemDLL("kernel32.dll")
+	procModule32First = modkernel32.NewProc("Module32FirstW")
+)
+
+func getExecutablePath(pid uint32) string {
+	handle, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPMODULE, pid)
+	if err != nil {
+		return ""
+	}
+	defer windows.CloseHandle(handle)
+
+	entry := moduleEntry32{
+		Size: sizeofModuleEntry32,
+	}
+
+	r0, _, _ := syscall.Syscall(procModule32First.Addr(), 2, uintptr(handle), uintptr(unsafe.Pointer(&entry)), 0)
+	if r0 == 0 {
+		return ""
+	}
+	return windows.UTF16ToString(entry.ExePath[:])
+}
+
+func newWindowsProcess(pe32 *windows.ProcessEntry32) Process {
+	return &windowsProcess{
+		pid:            int(pe32.ProcessID),
+		ppid:           int(pe32.ParentProcessID),
+		command:        windows.UTF16ToString(pe32.ExeFile[:]),
+		creationTime:   getCreationTime(pe32.ProcessID),
+		executablePath: getExecutablePath(pe32.ProcessID),
+	}
+}
+
 func processes() ([]Process, error) {
 	snapshot, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, 0)
 	if err != nil {
@@ -86,12 +137,7 @@ func processes() ([]Process, error) {
 
 	var procs []Process
 	for {
-		procs = append(procs, &windowsProcess{
-			pid:          int(pe32.ProcessID),
-			ppid:         int(pe32.ParentProcessID),
-			command:      windows.UTF16ToString(pe32.ExeFile[:]),
-			creationTime: getCreationTime(pe32.ProcessID),
-		})
+		procs = append(procs, newWindowsProcess(&pe32))
 		err = windows.Process32Next(snapshot, &pe32)
 		if err == windows.ERROR_NO_MORE_FILES {
 			break
@@ -117,12 +163,7 @@ func findProcess(pid int) (Process, error) {
 
 	for {
 		if int(pe32.ProcessID) == pid {
-			return &windowsProcess{
-				pid:          int(pe32.ProcessID),
-				ppid:         int(pe32.ParentProcessID),
-				command:      windows.UTF16ToString(pe32.ExeFile[:]),
-				creationTime: getCreationTime(pe32.ProcessID),
-			}, nil
+			return newWindowsProcess(&pe32), nil
 		}
 		err = windows.Process32Next(snapshot, &pe32)
 		if err == windows.ERROR_NO_MORE_FILES {
