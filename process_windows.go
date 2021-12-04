@@ -6,7 +6,6 @@ package ps
 
 import (
 	"fmt"
-	"syscall"
 	"time"
 	"unsafe"
 
@@ -71,29 +70,6 @@ func getCreationTime(pid uint32) time.Time {
 	return time.Unix(0, creationTime.Nanoseconds())
 }
 
-const _MAX_MODULE_NAME32 = 255
-
-type moduleEntry32 struct {
-	Size         uint32
-	ModuleID     uint32
-	ProcessID    uint32
-	GlblcntUsage uint32
-	ProccntUsage uint32
-	ModBaseAddr  uintptr
-	ModBaseSize  uint32
-	ModuleHandle windows.Handle
-	Module       [_MAX_MODULE_NAME32 + 1]uint16
-	ExePath      [windows.MAX_PATH]uint16
-}
-
-const sizeofModuleEntry32 = uint32(unsafe.Sizeof(moduleEntry32{}))
-
-// Windows API functions
-var (
-	modkernel32       = windows.NewLazySystemDLL("kernel32.dll")
-	procModule32First = modkernel32.NewProc("Module32FirstW")
-)
-
 func getExecutablePath(pid uint32) string {
 	handle, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPMODULE, pid)
 	if err != nil {
@@ -101,12 +77,12 @@ func getExecutablePath(pid uint32) string {
 	}
 	defer windows.CloseHandle(handle)
 
-	entry := moduleEntry32{
-		Size: sizeofModuleEntry32,
+	entry := windows.ModuleEntry32{
+		Size: uint32(windows.SizeofModuleEntry32),
 	}
 
-	r0, _, _ := syscall.Syscall(procModule32First.Addr(), 2, uintptr(handle), uintptr(unsafe.Pointer(&entry)), 0)
-	if r0 == 0 {
+	err = windows.Module32First(handle, &entry)
+	if err != nil {
 		return ""
 	}
 	return windows.UTF16ToString(entry.ExePath[:])
@@ -117,8 +93,8 @@ func newWindowsProcess(pe32 *windows.ProcessEntry32) Process {
 		pid:            int(pe32.ProcessID),
 		ppid:           int(pe32.ParentProcessID),
 		command:        windows.UTF16ToString(pe32.ExeFile[:]),
-		creationTime:   getCreationTime(pe32.ProcessID),
 		executablePath: getExecutablePath(pe32.ProcessID),
+		creationTime:   getCreationTime(pe32.ProcessID),
 	}
 }
 
