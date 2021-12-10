@@ -63,6 +63,28 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 		t.Errorf("ExecutablePath: got command %q, want %q", got, want)
 	}
 
+	switch runtime.GOOS {
+	case "darwin":
+		// see getExePathAndArgs in process_darwin.go
+		if v := getDarwinVersion(); v <= 19 {
+			t.Skipf("ExecutableArgs: not supported yet on macOS 10.15 and earlier (darwin version %d.x.y)", v)
+		}
+		fallthrough
+	case "linux":
+		exeArgs := p.ExecutableArgs()
+		if got, want := len(exeArgs), len(os.Args); got != want {
+			t.Errorf("ExecutableArgs: got %d args, want %d", got, want)
+		} else {
+			for i, a := range exeArgs {
+				if oa := os.Args[i]; a != oa {
+					t.Errorf("ExecutableArgs: got argument %d %q, want %q", i, a, oa)
+				}
+			}
+		}
+	default:
+		t.Skipf("ExecutableArgs: not yet supported on %s", runtime.GOOS)
+	}
+
 	slack := 2 * time.Minute
 	if diff := p.CreationTime().Sub(startTime); diff > slack {
 		t.Errorf("process created %v after tests started", diff)
