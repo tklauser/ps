@@ -67,7 +67,8 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 	case "darwin":
 		// see getExePathAndArgs in process_darwin.go
 		if v := getDarwinVersion(); v <= 19 {
-			t.Skipf("ExecutableArgs: not supported yet on macOS 10.15 and earlier (darwin version %d.x.y)", v)
+			t.Logf("ExecutableArgs: not supported yet on macOS 10.15 and earlier (darwin version %d.x.y)", v)
+			break
 		}
 		fallthrough
 	case "linux":
@@ -86,7 +87,7 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 			}
 		}
 	default:
-		t.Skipf("ExecutableArgs: not yet supported on %s", runtime.GOOS)
+		t.Logf("ExecutableArgs: not yet supported on %s", runtime.GOOS)
 	}
 
 	slack := 2 * time.Minute
