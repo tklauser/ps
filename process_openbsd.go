@@ -115,6 +115,10 @@ func (kp *kinfoProc) CreationTime() time.Time {
 	return time.Unix(int64(kp.Ustart_sec), int64(kp.Ustart_usec)*1000)
 }
 
+func getExePathAndArgs(pid int) (string, []string) {
+	return "", nil
+}
+
 const (
 	_KERN_PROC_ALL = 0
 	_KERN_PROC_PID = 1

@@ -14,13 +14,17 @@ import (
 )
 
 func newUnixProcess(kp *kinfoProc) *unixProcess {
+	pid := int(kp.Pid)
+	exePath, exeArgs := getExePathAndArgs(pid)
 	return &unixProcess{
-		pid:          int(kp.Pid),
-		ppid:         int(kp.Ppid),
-		uid:          int(kp.Uid),
-		gid:          int(kp.Groups[0]),
-		command:      string(kp.Comm[:bytes.IndexByte(kp.Comm[:], 0)]),
-		creationTime: kp.CreationTime(),
+		pid:            pid,
+		ppid:           int(kp.Ppid),
+		uid:            int(kp.Uid),
+		gid:            int(kp.Groups[0]),
+		command:        string(kp.Comm[:bytes.IndexByte(kp.Comm[:], 0)]),
+		executablePath: exePath,
+		executableArgs: exeArgs,
+		creationTime:   kp.CreationTime(),
 	}
 }
 
