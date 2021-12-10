@@ -48,7 +48,7 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 		t.Errorf("PID: got %v, want %v", got, want)
 	}
 	if got, want := p.PPID(), os.Getppid(); got != want {
-		t.Errorf("Parent PID: got %v, want %v", got, want)
+		t.Errorf("PPID: got %v, want %v", got, want)
 	}
 	if got, want := p.UID(), os.Getuid(); got != want {
 		t.Errorf("UID: got %v, want %v", got, want)
@@ -57,10 +57,10 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 		t.Errorf("GID: got %v, want %v", got, want)
 	}
 	if got, want := p.Command(), getExeName(); got != want {
-		t.Errorf("command: got %v, want %v", got, want)
+		t.Errorf("Command: got %v, want %v", got, want)
 	}
 	if got, want := filepath.Base(p.ExecutablePath()), getExeName(); got != want {
-		t.Errorf("executable: got %q, want %q", got, want)
+		t.Errorf("ExecutablePath: got command %q, want %q", got, want)
 	}
 
 	slack := 2 * time.Minute
