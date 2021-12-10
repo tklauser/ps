@@ -71,6 +71,10 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 		}
 		fallthrough
 	case "linux":
+		if got, want := p.ExecutablePath(), os.Args[0]; got != want {
+			t.Errorf("ExecutablePath: got %q, want %q", got, want)
+		}
+
 		exeArgs := p.ExecutableArgs()
 		if got, want := len(exeArgs), len(os.Args); got != want {
 			t.Errorf("ExecutableArgs: got %d args, want %d", got, want)
