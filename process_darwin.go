@@ -26,36 +26,31 @@ func getDarwinVersion() int {
 	return ver
 }
 
-func getExePathAndArgs(pid int) (string, []string) {
-	// TODO(tk): figure out why the format returned by the kern.procargs2 sysctl is different on
-	// macOS 10.15 and earlier.
-	if getDarwinVersion() <= 19 {
-		// 19.x.y is macOS 10.15 (Catalina), see
-		// https://en.wikipedia.org/wiki/Darwin_(operating_system)#Release_history
-		return "", nil
-	}
-
-	// See function getproclline() in adv_cmds/ps/print.c
-	// The format of KERN_PROCARGS2 is a C int (argc) followed by the executable’s string area.
-	// The string area consists of NUL-terminated strings, beginning with the executable path,
-	// and then starting on an aligned boundary, all of the elements of argv, envp, and applev.
-	procArgs, err := unix.SysctlRaw("kern.procargs2", pid)
-	if err != nil {
-		return "", nil
-	}
-	return parseProcArgs(procArgs)
-}
-
-func parseProcArgs(procArgs []byte) (string, []string) {
+func parseProcArgs(procArgs []byte, pid int) (string, []string) {
 	var argc int32 // C.int
-	if err := binary.Read(bytes.NewReader(procArgs), binary.LittleEndian, &argc); err != nil {
+	err := binary.Read(bytes.NewReader(procArgs), binary.LittleEndian, &argc)
+	if err != nil {
 		return "", nil
 	}
 	if argc < 1 {
 		return "", nil
 	}
 
-	procArgs = procArgs[4:]
+	// 19.x.y is macOS 10.15 (Catalina), see
+	// https://en.wikipedia.org/wiki/Darwin_(operating_system)#Release_history
+	if getDarwinVersion() <= 19 {
+		// On macOS ≤ 10.15, the format returned by the kern.procargs2 sysctl is different,
+		// however argc is still valid. Use that for the loop below (to detect the argv/envp
+		// boundary) but get the actual arguments using the kern.procargs sysctl which just
+		// returns the NUL-separated arguments.
+		procArgs, err = unix.SysctlRaw("kern.procargs", pid)
+		if err != nil {
+			return "", nil
+		}
+	} else {
+		procArgs = procArgs[4:]
+	}
+
 	nulPos := bytes.IndexByte(procArgs, 0)
 	exe := string(procArgs[:nulPos])
 	if argc == 1 {
@@ -75,6 +70,18 @@ func parseProcArgs(procArgs []byte) (string, []string) {
 		procArgs = procArgs[len(arg)+1:]
 	}
 	return exe, args
+}
+
+func getExePathAndArgs(pid int) (string, []string) {
+	// See function getproclline() in adv_cmds/ps/print.c
+	// The format of KERN_PROCARGS2 is a C int (argc) followed by the executable’s string area.
+	// The string area consists of NUL-terminated strings, beginning with the executable path,
+	// and then starting on an aligned boundary, all of the elements of argv, envp, and applev.
+	procArgs, err := unix.SysctlRaw("kern.procargs2", pid)
+	if err != nil {
+		return "", nil
+	}
+	return parseProcArgs(procArgs, pid)
 }
 
 func newUnixProcess(kp *unix.KinfoProc) *unixProcess {
