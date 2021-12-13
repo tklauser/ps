@@ -64,14 +64,7 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 	}
 
 	switch runtime.GOOS {
-	case "darwin":
-		// see getExePathAndArgs in process_darwin.go
-		if v := getDarwinVersion(); v <= 19 {
-			t.Logf("ExecutableArgs: not supported yet on macOS 10.15 and earlier (darwin version %d.x.y)", v)
-			break
-		}
-		fallthrough
-	case "dragonfly", "freebsd", "linux":
+	case "darwin", "dragonfly", "freebsd", "linux":
 		if got, want := p.ExecutablePath(), os.Args[0]; got != want {
 			t.Errorf("ExecutablePath: got %q, want %q", got, want)
 		}
