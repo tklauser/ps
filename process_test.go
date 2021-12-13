@@ -86,6 +86,10 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 				}
 			}
 		}
+	case "windows":
+		if got, want := p.ExecutablePath(), os.Args[0]; got != want {
+			t.Errorf("ExecutablePath: got %q, want %q", got, want)
+		}
 	default:
 		t.Logf("ExecutableArgs: not yet supported on %s", runtime.GOOS)
 	}
