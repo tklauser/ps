@@ -8,22 +8,31 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"sync"
 	"time"
 
 	"golang.org/x/sys/unix"
 )
 
+var darwinVersion struct {
+	sync.Once
+	ver int
+}
+
 func getDarwinVersion() int {
-	osrel, err := unix.Sysctl("kern.osrelease")
-	if err != nil {
-		return 0
-	}
-	ver := 0
-	for i := 0; i < len(osrel) && '0' <= osrel[i] && osrel[i] <= '9'; i++ {
-		ver *= 10
-		ver += int(osrel[i] - '0')
-	}
-	return ver
+	darwinVersion.Do(func() {
+		osrel, err := unix.Sysctl("kern.osrelease")
+		if err != nil {
+			return
+		}
+		ver := 0
+		for i := 0; i < len(osrel) && '0' <= osrel[i] && osrel[i] <= '9'; i++ {
+			ver *= 10
+			ver += int(osrel[i] - '0')
+		}
+		darwinVersion.ver = ver
+	})
+	return darwinVersion.ver
 }
 
 func parseProcArgs(procArgs []byte, pid int) (string, []string) {
