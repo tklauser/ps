@@ -5,7 +5,6 @@
 package ps
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io/ioutil"
@@ -110,7 +109,7 @@ func newUnixProcess(pid int) (Process, error) {
 		ppid:         int(psi.Ppid),
 		uid:          int(st.Uid),
 		gid:          int(st.Gid),
-		command:      string(psi.Fname[:bytes.IndexByte(psi.Fname[:], 0)]),
+		command:      unix.ByteSliceToString(psi.Fname[:]),
 		creationTime: time.Unix(int64(st.Ctim.Sec), int64(st.Ctim.Nsec)),
 	}
 

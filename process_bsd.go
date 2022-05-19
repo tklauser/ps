@@ -8,9 +8,10 @@
 package ps
 
 import (
-	"bytes"
 	"fmt"
 	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
 func newUnixProcess(kp *kinfoProc) *unixProcess {
@@ -21,7 +22,7 @@ func newUnixProcess(kp *kinfoProc) *unixProcess {
 		ppid:           int(kp.Ppid),
 		uid:            int(kp.Uid),
 		gid:            int(kp.Groups[0]),
-		command:        string(kp.Comm[:bytes.IndexByte(kp.Comm[:], 0)]),
+		command:        unix.ByteSliceToString(kp.Comm[:]),
 		executablePath: exePath,
 		executableArgs: exeArgs,
 		creationTime:   kp.CreationTime(),

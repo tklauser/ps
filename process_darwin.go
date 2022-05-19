@@ -101,7 +101,7 @@ func newUnixProcess(kp *unix.KinfoProc) *unixProcess {
 		ppid:           int(kp.Eproc.Ppid),
 		uid:            int(kp.Eproc.Ucred.Uid),
 		gid:            int(kp.Eproc.Ucred.Groups[0]),
-		command:        string(kp.Proc.P_comm[:bytes.IndexByte(kp.Proc.P_comm[:], 0)]),
+		command:        unix.ByteSliceToString(kp.Proc.P_comm[:]),
 		executablePath: exePath,
 		executableArgs: exeArgs,
 		creationTime:   time.Unix(kp.Proc.P_starttime.Sec, int64(kp.Proc.P_starttime.Usec)*1000),
