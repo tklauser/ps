@@ -42,10 +42,10 @@ func (p *windowsProcess) Command() string {
 }
 
 func (p *windowsProcess) ExecutablePath() string {
-	if p.executablePath == "" {
-		return p.command
+	if p.executablePath != "" {
+		return p.executablePath
 	}
-	return p.executablePath
+	return p.command
 }
 
 func (p *windowsProcess) ExecutableArgs() []string {

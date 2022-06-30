@@ -40,17 +40,17 @@ func (p *unixProcess) GID() int {
 }
 
 func (p *unixProcess) Command() string {
-	if p.executablePath == "" {
-		return p.command
+	if p.executablePath != "" {
+		return filepath.Base(p.executablePath)
 	}
-	return filepath.Base(p.executablePath)
+	return p.command
 }
 
 func (p *unixProcess) ExecutablePath() string {
-	if p.executablePath == "" {
-		return p.command
+	if p.executablePath != "" {
+		return p.executablePath
 	}
-	return p.executablePath
+	return p.command
 }
 
 func (p *unixProcess) ExecutableArgs() []string {
