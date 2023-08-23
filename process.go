@@ -8,7 +8,7 @@ package ps
 
 import "time"
 
-// Process is the generic interface for common information
+// Process is the generic interface for common process information.
 type Process interface {
 	// PID returns the process ID for this process.
 	PID() int
