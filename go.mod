@@ -1,5 +1,5 @@
 module github.com/tklauser/ps
 
-go 1.13
+go 1.16
 
 require golang.org/x/sys v0.11.0
