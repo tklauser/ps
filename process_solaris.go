@@ -7,7 +7,6 @@ package ps
 import (
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -115,7 +114,7 @@ func newUnixProcess(pid int) (Process, error) {
 
 	p.executablePath, _ = filepath.EvalSymlinks(filepath.Join(procDir, "path", "a.out"))
 
-	b, err := ioutil.ReadFile(filepath.Join(procDir, "cmdline"))
+	b, err := os.ReadFile(filepath.Join(procDir, "cmdline"))
 	if err == nil && len(b) > 0 {
 		p.executableArgs = strings.FieldsFunc(string(b), func(r rune) bool {
 			return r == '\u0000'

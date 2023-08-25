@@ -10,7 +10,7 @@ package ps
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -28,7 +28,7 @@ func newUnixProcess(pid int) (Process, error) {
 	} else if err != nil {
 		return nil, fmt.Errorf("failed to lstat %s: %w", procDir, err)
 	}
-	b, err := ioutil.ReadFile(filepath.Join(procDir, "stat"))
+	b, err := os.ReadFile(filepath.Join(procDir, "stat"))
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func newUnixProcess(pid int) (Process, error) {
 	p.command = string(comm)
 	p.executablePath, _ = filepath.EvalSymlinks(filepath.Join(procDir, "exe"))
 
-	b, err = ioutil.ReadFile(filepath.Join(procDir, "cmdline"))
+	b, err = os.ReadFile(filepath.Join(procDir, "cmdline"))
 	if err == nil && len(b) > 0 {
 		p.executableArgs = strings.FieldsFunc(string(b), func(r rune) bool {
 			return r == '\u0000'

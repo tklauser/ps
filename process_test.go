@@ -6,7 +6,6 @@ package ps_test
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -122,7 +121,7 @@ func getInitName() string {
 		return "init"
 	case "linux":
 		// might be systemd, sysv init, openrc, ...
-		b, err := ioutil.ReadFile("/proc/1/comm")
+		b, err := os.ReadFile("/proc/1/comm")
 		if err == nil {
 			return string(bytes.Trim(b, " \r\n"))
 		}
