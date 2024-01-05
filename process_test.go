@@ -6,6 +6,8 @@ package ps_test
 
 import (
 	"bytes"
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -160,7 +162,7 @@ func TestFindProcessInit(t *testing.T) {
 	}
 
 	proc, err := ps.FindProcess(initPID)
-	if os.IsPermission(err) {
+	if errors.Is(err, fs.ErrPermission) {
 		t.Skipf("no permission to read init process")
 	} else if err != nil {
 		t.Fatalf("FindProcess(%d): %v", initPID, err)
