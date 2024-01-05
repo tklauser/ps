@@ -105,8 +105,9 @@ func TestProcesses(t *testing.T) {
 		t.Errorf("no processes returned")
 	}
 
+	pid := os.Getpid()
 	for _, p := range procs {
-		if p.Command() == getExeName() {
+		if p.PID() == pid {
 			checkOwnProcess(t, p)
 			return
 		}
