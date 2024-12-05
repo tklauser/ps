@@ -2,4 +2,4 @@ module github.com/tklauser/ps
 
 go 1.18
 
-require golang.org/x/sys v0.27.0
+require golang.org/x/sys v0.28.0
