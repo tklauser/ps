@@ -26,7 +26,7 @@ func ExampleProcesses() {
 	})
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-	fmt.Fprintf(w, "PID\tPPID\tUID\tCOMMAND")
+	fmt.Fprintf(w, "PID\tPPID\tUID\tCOMMAND\n")
 	for _, p := range procs {
 		exeArgs := ""
 		if args := p.ExecutableArgs(); len(args) > 1 {
