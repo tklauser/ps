@@ -197,7 +197,7 @@ func TestFindProcessInit(t *testing.T) {
 
 func BenchmarkProcesses(b *testing.B) {
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, err := ps.Processes()
 		if err != nil {
 			b.Fatalf("Processes: %v", err)
@@ -209,8 +209,7 @@ func BenchmarkFindProcess(b *testing.B) {
 	pid := os.Getpid()
 
 	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, err := ps.FindProcess(pid)
 		if err != nil {
 			b.Fatalf("FindProcess: %v", err)
