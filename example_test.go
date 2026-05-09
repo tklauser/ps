@@ -5,9 +5,10 @@
 package ps_test
 
 import (
+	"cmp"
 	"fmt"
 	"os"
-	"sort"
+	"slices"
 	"strings"
 	"text/tabwriter"
 
@@ -21,8 +22,8 @@ func ExampleProcesses() {
 		return
 	}
 
-	sort.Slice(procs, func(i, j int) bool {
-		return procs[i].PID() < procs[j].PID()
+	slices.SortFunc(procs, func(a, b ps.Process) int {
+		return cmp.Compare(a.PID(), b.PID())
 	})
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
@@ -32,7 +33,7 @@ func ExampleProcesses() {
 		if args := p.ExecutableArgs(); len(args) > 1 {
 			exeArgs = " " + strings.Join(args[1:], " ")
 		}
-		fmt.Fprintf(w, "%d\t%d\t%d\t%s%s",
+		fmt.Fprintf(w, "%d\t%d\t%d\t%s%s\n",
 			p.PID(),
 			p.PPID(),
 			p.UID(),
