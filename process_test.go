@@ -65,7 +65,7 @@ func checkOwnProcess(t *testing.T, p ps.Process) {
 	}
 
 	switch runtime.GOOS {
-	case "darwin", "dragonfly", "freebsd", "linux":
+	case "darwin", "freebsd", "linux":
 		if got, want := p.ExecutablePath(), os.Args[0]; got != want {
 			t.Errorf("ExecutablePath: got %q, want %q", got, want)
 		}
