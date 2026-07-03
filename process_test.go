@@ -195,6 +195,17 @@ func TestFindProcessInit(t *testing.T) {
 	}
 }
 
+func TestProcessRefresh(t *testing.T) {
+	proc, err := ps.FindProcess(os.Getpid())
+	if err != nil {
+		t.Fatalf("FindProcess: %v", err)
+	}
+
+	checkOwnProcess(t, proc)
+	proc.Refresh()
+	checkOwnProcess(t, proc)
+}
+
 func BenchmarkProcesses(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
