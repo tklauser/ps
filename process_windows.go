@@ -56,6 +56,20 @@ func (p *windowsProcess) CreationTime() time.Time {
 	return p.creationTime
 }
 
+func (p *windowsProcess) Refresh() error {
+	proc, err := findProcess(p.pid)
+	if err != nil {
+		return err
+	}
+	np := proc.(*windowsProcess)
+	p.ppid = np.ppid
+	p.command = np.command
+	p.executablePath = np.executablePath
+	p.executableArgs = np.executableArgs
+	p.creationTime = np.creationTime
+	return nil
+}
+
 func getCreationTime(pid uint32) time.Time {
 	c, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
 	if err != nil {

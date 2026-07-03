@@ -7,6 +7,7 @@
 package ps
 
 import (
+	"fmt"
 	"path/filepath"
 	"time"
 )
@@ -58,4 +59,20 @@ func (p *unixProcess) ExecutableArgs() []string {
 
 func (p *unixProcess) CreationTime() time.Time {
 	return p.creationTime
+}
+
+func (p *unixProcess) Refresh() error {
+	proc, err := findProcess(p.pid)
+	if err != nil {
+		return fmt.Errorf("failed to refresh process: %w", err)
+	}
+	np := proc.(*unixProcess)
+	p.ppid = np.ppid
+	p.uid = np.uid
+	p.gid = np.gid
+	p.command = np.command
+	p.executablePath = np.executablePath
+	p.executableArgs = np.executableArgs
+	p.creationTime = np.creationTime
+	return nil
 }

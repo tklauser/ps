@@ -12,28 +12,38 @@ import "time"
 type Process interface {
 	// PID returns the process ID for this process.
 	PID() int
+
 	// PPID returns the parent process ID for this process.
 	PPID() int
+
 	// UID returns the numeric user ID for this process. On Windows, it
 	// always returns -1.
 	UID() int
+
 	// GID returns the numeric group ID for this process. On Windows, it
 	// always returns -1.
 	GID() int
+
 	// ExecutablePath returns the full path to the executable of this
 	// process. This information might not be available on all platforms or
 	// if the executable was removed while the process was still running.
 	ExecutablePath() string
+
 	// ExecutableArgs returns the command line arguments for this process,
 	// including the executable name. This information might not be
 	// available on all platforms.
 	ExecutableArgs() []string
+
 	// Command returns the command or executable name running this process.
 	// On some platforms (e.g. macOS and the BSDs) this name might be
 	// truncated.
 	Command() string
+
 	// CreationTime returns the creation time for this process.
 	CreationTime() time.Time
+
+	// Refresh reloads all data associated with this process from the OS.
+	Refresh() error
 }
 
 // Processes returns all currently running processes.
